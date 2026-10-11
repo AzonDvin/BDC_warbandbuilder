@@ -185,12 +185,6 @@ details.rules dd { margin: 0; }
 .f-foot { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 
 /* roster sheet: printed paper, deliberately ink-on-white in both themes, laid out like the book's Warband Roster */
-.sheet { margin-top: 20px; display: grid; gap: 16px; }
-.sheet-bar { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: end; }
-.sheet-bar .field { flex: 1 1 320px; }
-.sheet-bar textarea { width: 100%; min-height: 64px; border: 1px solid var(--line); background: var(--surface); border-radius: 3px; padding: 6px 10px; }
-.sheet-bar label.chk { display: flex; gap: 6px; align-items: center; font-size: .92rem; }
-.paper-scroll { overflow-x: auto; padding-bottom: 8px; }
 .paper { --p-ink: #141414; --p-paper: #ffffff; --p-grey: #d9d9d9; --p-row: #f2f2f2;
   width: 210mm; min-height: 297mm; margin: 0 auto 16px; padding: 9mm 10mm; background: var(--p-paper); color: var(--p-ink);
   box-shadow: 0 1px 4px rgba(0,0,0,.35); font-family: Georgia, "Times New Roman", serif; font-size: 9pt; line-height: 1.25;
@@ -258,10 +252,6 @@ details.rules dd { margin: 0; }
 
 /* saves */
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 14px 16px; display: grid; gap: 10px; margin-top: 20px; }
-.save-list { display: grid; gap: 6px; }
-.save-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 6px 8px; border: 1px solid var(--line); border-radius: 3px; background: var(--bg); }
-.save-row .nm { font-weight: 700; flex: 1 1 200px; min-width: 0; }
-textarea.code { width: 100%; min-height: 140px; font-family: var(--f-data); font-size: .8rem; border: 1px solid var(--line); background: var(--bg); border-radius: 3px; padding: 8px; }
 .toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 8px 16px; border-radius: 3px; font-size: .92rem; z-index: 20; }
 
 @media (max-width: 980px) {
@@ -297,8 +287,7 @@ textarea.code { width: 100%; min-height: 140px; font-family: var(--f-data); font
     </div>
     <nav class="tabs" role="tablist">
       <button class="tab" role="tab" id="tab-build" data-tab="build" aria-selected="true">Build</button>
-      <button class="tab" role="tab" id="tab-sheet" data-tab="sheet" aria-selected="false">Roster sheet</button>
-      <button class="tab" role="tab" id="tab-saves" data-tab="saves" aria-selected="false">Save &amp; share</button>
+      <button class="tab" role="tab" id="tab-saves" data-tab="saves" aria-selected="false">Save &amp; load</button>
       <button class="btn primary" id="pdf-top" data-act="pdf">Export PDF</button>
     </nav>
   </header>
@@ -317,6 +306,11 @@ textarea.code { width: 100%; min-height: 140px; font-family: var(--f-data); font
       <div class="choice-row" id="origin-row"></div>
       <div class="stronghold" id="stronghold"></div>
     </div>
+    <div class="field">
+      <label class="label" for="wb-notes">Roster notes <span style="text-transform:none;letter-spacing:0;font-weight:400">(printed in the Notes box of the PDF)</span></label>
+      <textarea class="text-in" id="wb-notes" rows="2" maxlength="4000" placeholder="Anything to print on the roster's cover page"></textarea>
+      <label class="chk" style="display:flex;gap:6px;align-items:center;font-size:.92rem"><input type="checkbox" id="wb-blanks"> Add blank fighter cards to fill the last PDF page</label>
+    </div>
   </section>
 
   <div class="tally" id="tally"></div>
@@ -328,12 +322,11 @@ textarea.code { width: 100%; min-height: 140px; font-family: var(--f-data); font
     <section class="roster" id="roster" aria-label="Your fighters"></section>
   </div>
 
-  <div id="view-sheet" class="sheet" hidden></div>
 
   <div id="view-saves" hidden>
     <div class="panel">
-      <h2>Saved warbands</h2>
-      <p class="muted" style="margin:0">Save a warband as a .json file to keep it anywhere, or keep quick saves in this browser.</p>
+      <h2>Save &amp; load</h2>
+      <p class="muted" style="margin:0">Save your warband as a .json file, then load that file whenever you want to keep working on it.</p>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn primary" id="save-file-btn">Save to file…</button>
         <button class="btn primary" id="load-file-btn">Load from file…</button>
@@ -341,20 +334,9 @@ textarea.code { width: 100%; min-height: 140px; font-family: var(--f-data); font
       </div>
       <span id="file-msg" class="muted"></span>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn" id="save-btn">Quick save in this browser</button>
+        <button class="btn" id="copy-text">Copy roster as text</button>
         <button class="btn" id="new-btn">Start a new warband</button>
       </div>
-      <div class="save-list" id="save-list"></div>
-    </div>
-    <div class="panel">
-      <h2>Copy &amp; import</h2>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn" id="copy-text">Copy roster as text</button>
-        <button class="btn" id="copy-code">Copy save code</button>
-      </div>
-      <label class="label" for="import-box">Paste a save code to load it</label>
-      <textarea class="code" id="import-box" placeholder='{"v":1,"faction":"guild",...}'></textarea>
-      <div><button class="btn" id="import-btn">Load save code</button> <span id="import-msg" class="muted"></span></div>
     </div>
   </div>
 </div>
@@ -1002,6 +984,8 @@ function traitHtml(traits) {
 
 function renderSetup() {
   $("#wb-name").value = S.name;
+  if (document.activeElement !== $("#wb-notes")) $("#wb-notes").value = S.notes || "";
+  $("#wb-blanks").checked = S.blanks !== false;
   document.body.dataset.faction = S.faction;
   const dot = { guild: "var(--acc-guild)", vermin: "var(--acc-vermin)", coven: "var(--acc-coven)", cloister: "var(--acc-cloister)" };
   $("#faction-row").innerHTML = Object.entries(FACTIONS).map(([id, f]) => `
@@ -1293,21 +1277,6 @@ function sheetPagesHtml() {
   return cover + pages.join("");
 }
 
-function renderSheetPages() { const el = $("#sheet-pages"); if (el) el.innerHTML = sheetPagesHtml(); }
-
-function renderSheet() {
-  $("#view-sheet").innerHTML = `
-    <div class="sheet-bar">
-      <div class="field"><label class="label" for="sheet-notes">Notes for the roster</label>
-        <textarea id="sheet-notes" placeholder="Anything to print in the Notes box on the cover page">${esc(S.notes || "")}</textarea></div>
-      <label class="chk"><input type="checkbox" id="sheet-blanks" ${S.blanks !== false ? "checked" : ""}> Fill the last page with blank cards</label>
-      <button class="btn primary" data-act="pdf">Export PDF</button>
-    </div>
-    <p class="muted" style="margin:0;font-size:.92rem">This preview matches the printed roster: a cover page, then 5 fighter cards per A4 page. Export PDF opens your browser's print window; choose <b>Save as PDF</b> as the printer.</p>
-    <div class="paper-scroll" id="sheet-pages"></div>`;
-  renderSheetPages();
-}
-
 function exportPdf() {
   $("#print-root").innerHTML = sheetPagesHtml();
   const oldTitle = document.title;
@@ -1318,28 +1287,13 @@ function exportPdf() {
   setTimeout(() => window.print(), 60);
 }
 
-function renderSaves() {
-  const saves = loadSaves();
-  const ids = Object.keys(saves).sort((a, b) => (saves[b].savedAt || 0) - (saves[a].savedAt || 0));
-  $("#save-list").innerHTML = ids.length ? ids.map(id => {
-    const s = saves[id];
-    return `<div class="save-row"><span class="nm">${esc(s.state.name || "Unnamed warband")}</span>
-      <span class="muted">${esc(FACTIONS[s.state.faction]?.name || "")} · ${s.state.fighters.length} fighters</span>
-      <button class="btn small" data-act="load-save" data-id="${id}">Load</button>
-      <button class="btn small danger" data-act="del-save" data-id="${id}">Delete</button></div>`;
-  }).join("") : `<div class="muted">No saved warbands yet.</div>`;
-}
-
 function render() {
   renderSetup(); renderTally();
   $("#view-build").hidden = view !== "build";
-  $("#view-sheet").hidden = view !== "sheet";
   $("#view-saves").hidden = view !== "saves";
   $("#setup").hidden = view === "saves";
   document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", t.dataset.tab === view));
   if (view === "build") { renderRecruit(); renderRoster(); }
-  if (view === "sheet") renderSheet();
-  if (view === "saves") renderSaves();
   document.documentElement.style.setProperty("--tally-h", $("#tally").offsetHeight + "px");
   persistDraft();
 }
@@ -1347,10 +1301,8 @@ function render() {
 window.addEventListener("beforeprint", () => { $("#print-root").innerHTML = sheetPagesHtml(); });
 
 /* ============================== PERSISTENCE ============================== */
-const DRAFT_KEY = "bdc-builder-draft", SAVES_KEY = "bdc-builder-saves";
+const DRAFT_KEY = "bdc-builder-draft";
 function persistDraft() { try { localStorage.setItem(DRAFT_KEY, JSON.stringify(S)); } catch (e) {} }
-function loadSaves() { try { return JSON.parse(localStorage.getItem(SAVES_KEY) || "{}") || {}; } catch (e) { return {}; } }
-function writeSaves(s) { try { localStorage.setItem(SAVES_KEY, JSON.stringify(s)); return true; } catch (e) { return false; } }
 
 function sanitize(st) {
   if (!st || typeof st !== "object" || !FACTIONS[st.faction]) throw new Error("That doesn't look like a warband save code.");
@@ -1377,6 +1329,12 @@ function rosterText() {
     lines.push(`${f.name} — ${ft.name} [${ft.role}] ${fighterCost(f)}s, Exp ${f.exp}`);
     lines.push(`  Mv ${p.st.mv} Bl ${p.st.bl} Bw ${p.st.bw} Ar ${p.st.ar} In ${p.st.in} Wl ${p.st.wl} Lf ${p.st.lf}`);
     for (const w of p.weapons) lines.push(`  ${w.id === "unarmed" ? w.name : gearLabel(f, w.id)}: ${w.k === "r" ? w.rng + " " : ""}A${w.a} R${w.r} D${w.d} C${w.c}${w.traits.length ? " (" + w.traits.join(", ") + ")" : ""}`);
+    if (ft.alt) {
+      const a = parseStats(ft.alt.st), w = G[ft.alt.weapon];
+      lines.push(`  Transforms into ${ft.alt.name} (${ft.alt.kw}):`);
+      lines.push(`    Mv ${a.mv} Bl ${a.bl} Bw ${a.bw} Ar ${a.ar} In ${a.in} Wl ${a.wl} Lf ${a.lf}`);
+      lines.push(`    ${w.name}: A${w.a} R${w.r} D${w.d} C${w.c}${w.traits.length ? " (" + w.traits.join(", ") + ")" : ""}`);
+    }
     const other = allGear(f).filter(id => G[id].k === "a" || G[id].k === "i").map(id => gearLabel(f, id));
     if (other.length) lines.push(`  Wargear: ${other.join(", ")}`);
     if (f.mut) lines.push(`  Mutation: ${MUTATIONS[f.mut].name}`);
@@ -1392,7 +1350,7 @@ let toastTimer;
 function toast(msg) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => t.hidden = true, 2200); }
 async function copy(text, okMsg) {
   try { await navigator.clipboard.writeText(text); toast(okMsg); }
-  catch (e) { const box = $("#import-box"); box.value = text; box.focus(); box.select(); toast("Copy was blocked; the text is selected in the box below."); }
+  catch (e) { toast("This browser blocked copying. Use Export PDF or Save to file instead."); }
 }
 const armed = new Map();
 function confirmClick(btn, key, label, fn) {
@@ -1429,8 +1387,6 @@ document.addEventListener("click", e => {
     case "reroll-exp": { const ft = ftype(f.t); f.exp = ft.expBase + (ft.expDice ? d6() : 0); touch(); break; }
     case "pdf": exportPdf(); return;
     case "new": S = blankState(S.faction); view = "build"; break;
-    case "load-save": { const s = loadSaves()[id]; if (s) { S = sanitize(s.state); view = "build"; toast("Warband loaded."); } break; }
-    case "del-save": confirmClick(b, "del-" + id, "Click again to delete", () => { const s = loadSaves(); delete s[id]; writeSaves(s); renderSaves(); toast("Save deleted."); }); return;
     default: return;
   }
   render();
@@ -1438,7 +1394,7 @@ document.addEventListener("click", e => {
 
 document.addEventListener("change", e => {
   const el = e.target;
-  if (el.id === "sheet-blanks") { S.blanks = el.checked; persistDraft(); renderSheetPages(); return; }
+  if (el.id === "wb-blanks") { S.blanks = el.checked; persistDraft(); return; }
   const act = el.dataset.act; if (!act) return;
   const f = el.dataset.uid ? byUid(el.dataset.uid) : null;
   const keepFocus = el.id;
@@ -1454,23 +1410,13 @@ document.addEventListener("change", e => {
 
 document.addEventListener("input", e => {
   const el = e.target;
-  if (el.id === "wb-name") { S.name = el.value; persistDraft(); if (view === "sheet") renderSheetPages(); return; }
-  if (el.id === "sheet-notes") { S.notes = el.value; persistDraft(); renderSheetPages(); return; }
+  if (el.id === "wb-name") { S.name = el.value; persistDraft(); return; }
+  if (el.id === "wb-notes") { S.notes = el.value; persistDraft(); return; }
   if (el.dataset.act === "name") { const f = byUid(el.dataset.uid); f.name = el.value; touch(); renderTally(); persistDraft(); }
 });
 
-$("#save-btn").addEventListener("click", () => {
-  const saves = loadSaves(); const key = (S.name || "Unnamed warband").trim() + "|" + S.faction;
-  saves[key] = { savedAt: Date.now(), state: JSON.parse(exportState()) };
-  toast(writeSaves(saves) ? "Saved in this browser." : "This browser blocked saving. Copy the save code instead."); renderSaves();
-});
 $("#new-btn").addEventListener("click", e => confirmClick(e.currentTarget, "new", "Click again: clear the current warband", () => { S = blankState(S.faction); view = "build"; render(); }));
 $("#copy-text").addEventListener("click", () => copy(rosterText(), "Roster copied as text."));
-$("#copy-code").addEventListener("click", () => copy(exportState(), "Save code copied."));
-$("#import-btn").addEventListener("click", () => {
-  try { S = sanitize(JSON.parse($("#import-box").value)); $("#import-msg").textContent = ""; view = "build"; render(); toast("Warband loaded from save code."); }
-  catch (err) { $("#import-msg").textContent = err instanceof SyntaxError ? "That code isn't valid. Paste the whole save code, starting with {." : err.message; }
-});
 
 /* save / load .json files */
 function fileName() { return ((S.name || "warband").trim().replace(/[\\/:*?"<>|]+/g, "").replace(/\s+/g, "-") || "warband") + ".bdc.json"; }
@@ -1530,7 +1476,6 @@ function exampleState() {
   try { draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null"); } catch (e) {}
   try { S = draft ? sanitize(draft) : null; if (S && draft.example) S.example = true; } catch (e) { S = null; }
   if (!S) S = exampleState();
-  if (location.hash === "#sheet") view = "sheet";
   render();
   $("#print-root").innerHTML = sheetPagesHtml();
 })();
