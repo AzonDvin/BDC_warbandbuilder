@@ -1,4 +1,5 @@
 <!doctype html>
+<!-- Rules version: Black Death City Playtest v1.03 -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -248,6 +249,20 @@ details.rules dd { margin: 0; }
 .rot span { background: var(--p-ink); color: var(--p-paper); width: 100%; text-align: center; font-family: "IM Fell English", serif; font-style: italic; font-size: 8.5pt; padding: .4mm 0; }
 .rot i { width: 3.6mm; height: 3.6mm; border: 1.6px solid var(--p-ink); border-radius: 50%; display: block; }
 .page-break { break-after: page; page-break-after: always; }
+.lore-page h2 { font-size: 24pt; text-align: center; margin: 0 0 2mm; }
+.lore-note { font-size: 8.5pt; font-style: italic; text-align: center; margin: 0 0 4mm; }
+.lore { border: 2px solid var(--p-ink); padding: 2mm 2.5mm; margin-bottom: 4mm; break-inside: avoid; page-break-inside: avoid; }
+.lore h3 { font-family: "UnifrakturMaguntia", serif; font-weight: 400; font-size: 16pt; margin: 0; }
+.lore h3 .d6 { font-family: "IM Fell English", serif; font-size: 11pt; }
+.lore .known { font-size: 8pt; margin: .5mm 0 1.5mm; }
+.lt { border-collapse: collapse; width: 100%; table-layout: fixed; }
+.lt th { background: var(--p-ink); color: var(--p-paper); font-family: "IM Fell English", serif; font-weight: 400; font-size: 8.5pt; padding: .6mm 1mm; text-align: left; }
+.lt td { border: 1px solid #b5b5b5; font-size: 7.6pt; padding: .7mm 1mm; vertical-align: top; line-height: 1.25; }
+.lt td.n { text-align: center; font-family: "IM Fell English", serif; font-size: 11pt; }
+.lt td.c { text-align: center; }
+.lt tbody tr:nth-child(even) td { background: var(--p-row); }
+.lt tr.sig td { background: #e6e6e6; }
+.lt tr.sig td:first-child { background: var(--p-ink); color: var(--p-paper); }
 #print-root { display: none; }
 
 /* saves */
@@ -281,7 +296,7 @@ details.rules dd { margin: 0; }
 <div class="wrap">
   <header class="masthead">
     <div>
-      <div class="label">Black Death City · Playtest v1.02</div>
+      <div class="label">Black Death City · Playtest v1.03</div>
       <h1>Warband Builder</h1>
       <p>Recruit a starting warband with 1000 silver. Pick a faction and origin, hire fighters, arm them from their armoury lists, and pick their skills and signature spells.</p>
     </div>
@@ -348,23 +363,24 @@ details.rules dd { margin: 0; }
 /* ============================== DATA ============================== */
 const TRAITS = {
   "Arcane": "Critical hits on 5+",
-  "Blast": "Blast template. Miss scatters d6x2\"",
+  "Blast": "Blast template. Miss scatters d6x2\". No critical hits",
   "Bludgeon": "Critical hits deal 1 damage when saved",
   "Brace": "Initiative vs charging fighters",
   "Flame": "Flame template. Auto-hits",
   "Guard": "1 miss can parry a hit",
-  "Heavy": "Move or attack (can still reload before or after)",
+  "Heavy": "Move or attack",
   "Misfire": "On a natural 1, roll on the misfire table",
   "Natural Weapon": "Cannot parry",
   "Off-hand": "Can be used off-hand: 1 attack",
   "One-use": "1 attack per battle",
   "Poison": "Critical hits poison: suffer 1 damage when activated, until healed or on 1 life",
-  "Reload": "Spend a Move or Action to reload",
+  "Reload": "Starts the battle loaded. Forgo a Move or Action to reload; not while engaged in melee",
   "Scare": "Unengaged fighters hit pass a Willpower test or scatter d6\"",
   "Two-handed": "1 per fighter. No off-hand attack",
   "Unwieldy": "-1 to attack rolls",
   "Volley": "Multiple targets within 3\"",
-  "Wrap": "Cannot parry or be parried"
+  "Wrap": "Cannot parry or be parried",
+  "No armour roll": "The target suffers the damage directly; no armour roll is made"
 };
 
 const G = {}; // wargear catalogue
@@ -383,6 +399,7 @@ M("halberd", "Halberd", 3, "-1", 1, "d3+1", "Brace, Two-handed, Unwieldy");
 M("heavy_axe", "Heavy Axe", 3, "-2", 2, "d3+1", "Two-handed, Unwieldy");
 M("ogre_blade", "Ogre Blade", 3, "-1", 2, "d3+1", "Off-hand");
 M("ogre_gw", "Ogre Great Weapon", 3, "-2", 3, "d3+2", "Two-handed, Unwieldy");
+M("ogre_gw_coven", "Ogre Great Weapon", 3, "-2", 3, "d3+2", "Two-handed");
 M("ogre_mace", "Ogre Mace", 3, "-1", 2, "d3+1", "Bludgeon, Off-hand");
 M("spear", "Spear", 3, "-", 1, "d3", "Brace, Two-handed");
 M("sword", "Sword", 3, "-", 1, "d3", "Guard, Off-hand");
@@ -396,8 +413,8 @@ M("nasty_bite", "Nasty Bite", 4, "-", 1, "1", "Natural Weapon, Poison");
 M("oversized_claw", "Oversized Claw", 3, "-", 2, "d3+1", "Bludgeon, Natural Weapon");
 M("poison_blade", "Poison Blade", 3, "-1", 1, "d3", "Guard, Off-hand, Poison");
 M("rat_blade", "Rat-Mutant Blade", 3, "-1", 2, "d3+1", "Off-hand");
-M("spark_drill", "Spark-Drill", 3, "-3", 1, "d3+1", "Arcane, Two-handed, Unwieldy");
-M("spark_fists", "Spark-Powered Fists", 3, "-2", 2, "d3+1", "Arcane, Bludgeon, Two-handed, Unwieldy");
+M("spark_drill", "Spark-Drill", 3, "-3", 1, "d3+1", "Arcane, Two-handed");
+M("spark_fists", "Spark-Powered Fists", 3, "-2", 2, "d3+1", "Arcane, Bludgeon, Two-handed");
 M("cursed_blade", "Cursed Blade", 3, "-1", 1, "d3", "Arcane, Guard, Off-hand, Poison");
 M("great_mace", "Great Mace", 3, "-1", 2, "d3+1", "Bludgeon, Two-handed, Unwieldy");
 M("drb", "Demonic Rot Blade", 3, "-1", 1, "d3", "Arcane, Guard, Poison");
@@ -408,34 +425,35 @@ M("great_club", "Great Club", 3, "-1", 2, "d3+1", "Bludgeon, Two-handed, Unwield
 M("proboscis", "Proboscis", 3, "-", 1, "1", "Natural Weapon, Poison");
 M("vicious_bite", "Vicious Bite", 3, "-", 1, "d3", "Natural Weapon");
 M("zombie_bite", "Zombie Bite", 3, "-", 1, "d3", "Natural Weapon, Poison");
-M("stone_talons", "Stone Talons", 3, "-1", 2, "d6+1", "Bludgeon, Natural Weapon");
+M("stone_talons", "Stone Talons", 3, "-1", 2, "d3+1", "Bludgeon, Natural Weapon");
 M("biting_fangs", "Biting Fangs", 4, "-", 1, "1", "Natural Weapon");
 M("necrotic_bite", "Necrotic Bite", 3, "-1", 1, "d3", "Natural Weapon");
 M("wulfen_claws", "Wulfen Claws", 3, "-1", 2, "d3+1", "Bludgeon, Natural Weapon");
 M("unarmed", "Unarmed Strike", 2, "-", 1, "1", "Natural Weapon");
 
-R("arbalest", "Arbalest", "24\"", 1, "-2", 3, "d6+2", "Heavy, Reload, Two-handed, Unwieldy", 1);
-R("bp_pistol", "Blackpowder Pistol", "12\"", 1, "-1", 1, "d6", "Misfire, Reload");
-R("bp_rifle", "Blackpowder Rifle", "18\"", 1, "-1", 1, "d6", "Misfire, Reload, Two-handed");
+R("arbalest", "Arbalest", "24\"", 1, "-2", 3, "d6+2", "Heavy, Two-handed", 1);
+R("ogre_arbalest", "Ogre Arbalest", "24\"", 1, "-2", 3, "d6+2", "Reload, Two-handed", 1);
+R("bp_pistol", "Blackpowder Pistol", "12\"", 1, "-1", 2, "d6+1", "Misfire, Reload");
+R("bp_rifle", "Blackpowder Rifle", "18\"", 1, "-1", 2, "d6+1", "Misfire, Reload, Two-handed");
 R("blunderbuss", "Blunderbuss", "8\"", "d3", "-", 1, "d3", "Misfire, Reload, Two-handed");
-R("brace_pistols", "Brace of Pistols", "12\"", 2, "-1", 1, "d6", "Misfire, Reload, Two-handed");
+R("brace_pistols", "Brace of Pistols", "12\"", 2, "-1", 2, "d6+1", "Misfire, Reload, Two-handed");
 R("crossbow", "Crossbow", "20\"", 1, "-1", 1, "d6", "Reload, Two-handed");
-R("fire_bombs", "Fire Bombs", "8\"", 1, "-", 2, "d3+1", "Blast, One-use, Scare", 1);
-R("flamethrower", "Flamethrower", "Flame", 1, "-", "d3", "-", "Flame, Reload, Scare, Two-handed", 1);
+R("fire_bombs", "Fire Bombs", "8\"", 1, "-", "d3+1", "-", "Blast, One-use, Scare", 1);
+R("flamethrower", "Flamethrower", "Flame", 1, "-", "d3+1", "-", "Flame, Reload, Scare, Two-handed", 1);
 R("hand_crossbow", "Hand Crossbow", "12\"", 1, "-", 1, "d6", "Reload");
 R("long_bow", "Long Bow", "24\"", 1, "-1", 1, "d6", "Heavy, Two-handed");
-R("long_rifle", "Long Rifle", "30\"", 1, "-2", 2, "d6+2", "Heavy, Misfire, Reload, Two-handed, Unwieldy");
-R("ogre_cannon", "Ogre Cannon", "18\"", 1, "-3", 2, "d3+1", "Blast, Heavy, Misfire, Reload, Two-handed, Unwieldy", 1);
-R("ogre_pistol", "Ogre Pistol", "16\"", 1, "-1", 2, "d6+1", "Misfire, Reload");
-R("repeater", "Repeater Pistol", "12\"", 1, "-1", 1, "d6", "Misfire");
+R("long_rifle", "Long Rifle", "30\"", 1, "-2", 2, "d6+2", "Heavy, Misfire, Two-handed");
+R("ogre_cannon", "Ogre Cannon", "18\"", 1, "-3", "d6+1", "-", "Blast, Misfire, Reload, Two-handed", 1);
+R("ogre_pistol", "Ogre Pistol", "16\"", 1, "-1", 3, "d6+2", "Misfire, Reload");
+R("repeater", "Repeater Pistol", "12\"", 1, "-1", 2, "d6+1", "Misfire");
 R("short_bow", "Short Bow", "16\"", 1, "-", 1, "d6", "Two-handed");
-R("volley_rifle", "Volley Rifle", "16\"", 3, "-1", 1, "d6", "Misfire, Reload, Two-handed, Volley", 1);
-R("arc_gun", "Arc-Lightning Gun", "18\"", 6, "-", 1, "d3", "Heavy, Misfire, Two-handed, Unwieldy, Volley", 1);
-R("flame_canister", "Flame-Canister", "Flame", 1, "-", "d3", "-", "Flame, One-use, Scare", 2);
-R("gatling", "Heavy Gatling Gun", "16\"", 3, "-1", 2, "d6+1", "Heavy, Misfire, Two-handed, Unwieldy, Volley", 1);
-R("orb_bombs", "Orb Bombs", "8\"", 1, "-", 2, "d3+1", "Blast, One-use", 5);
-R("orb_launcher", "Orb Launcher", "20\"", 1, "-", 2, "d3+1", "Blast, Misfire, Reload, Two-handed, Unwieldy", 1);
-R("rocket", "Rocket Launcher", "30\"", 1, "-1", 2, "d6+1", "Blast, Heavy, Misfire, One-use, Two-handed, Unwieldy", 1);
+R("volley_rifle", "Volley Rifle", "16\"", 3, "-1", 2, "d6+1", "Misfire, Reload, Two-handed, Volley", 1);
+R("arc_gun", "Arc-Lightning Gun", "18\"", 6, "-", 1, "d3", "Arcane, Heavy, Misfire, Two-handed, Volley", 1);
+R("flame_canister", "Flame-Canister", "Flame", 1, "-", "d3+1", "-", "Flame, One-use, Scare", 2);
+R("gatling", "Heavy Gatling Gun", "16\"", 3, "-1", 2, "d6+1", "Heavy, Misfire, Two-handed, Volley", 1);
+R("orb_bombs", "Orb Bombs", "8\"", 1, "-", "d3+1", "-", "Blast, One-use", 5);
+R("orb_launcher", "Orb Launcher", "20\"", 1, "-", "d3+1", "-", "Blast, Misfire, Reload, Two-handed", 1);
+R("rocket", "Rocket Launcher", "30\"", 1, "-1", "d6+1", "-", "Blast, Heavy, Misfire, One-use, Two-handed", 1);
 R("sling", "Sling", "16\"", 1, "-", 1, "d3", "");
 R("throwing_stars", "Throwing Stars", "8\"", 1, "-", 1, "d3", "Poison");
 R("blowpipe", "Blowpipe", "12\"", 1, "-", 1, "d3", "Poison");
@@ -450,8 +468,8 @@ I("shield", "Shield", true, 0, "Improve this fighter's Armour value by 1, to a m
 I("grappling_hook", "Grappling Hook", false, 2, "This fighter can climb high walls in the same manner as ladders.");
 I("guild_banner", "Guild Banner", true, 1, "While on the battlefield, re-roll flee tests. Re-roll Willpower tests for friendly fighters within 12\" who can see this fighter.");
 I("loyal_companion", "Loyal Companion", false, 1, "Each melee attack, make 1 additional attack: Rend -1, Damage 1, Crit d3, Natural Weapon.");
-I("bomb_bolt", "Bomb-Bolt", false, 1, "Requires a Crossbow. Once per battle, a crossbow attack gains +1 Rend, +1 Damage and Critical Damage, and Blast.");
-I("grimoire", "Grimoire", false, 0, "Once per battle, re-roll a casting roll made for this fighter.");
+I("bomb_bolt", "Bomb-Bolt", false, 1, "Requires a Crossbow. Once per battle, make a ranged attack with: Range 20\", Attacks 1, Rend -1, Damage d3+1, Critical -, Blast.");
+I("grimoire", "Grimoire", false, 1, "Once per battle, re-roll a casting roll made for this fighter.");
 I("lantern", "Torchlight/Lantern", true, 0, "Worsen the Armour value of enemy Demon and Undead fighters by 1 while engaged with this fighter.");
 I("stakes", "Wooden Stakes", false, 1, "Once per battle bonus action vs a bloodied Undead or Demon in melee: on a 2+ it is taken down (+10 bonus experience).");
 I("bomb_rat", "Bomb Rat", false, 1, "Once per battle bonus action: summon a Giant Rat with a 1–6 fuse. When it detonates, blast template hits for Rend -2, Damage d3.");
@@ -550,7 +568,46 @@ const LORES = {
   ]}
 };
 function parseStats(str) { const s = str.split(" "); return { mv: s[0], bl: s[1], bw: s[2], ar: s[3], in: s[4], wl: s[5], lf: s[6] }; }
-for (const [lid, l] of Object.entries(LORES)) l.spells = l.spells.map((s, i) => ({ id: lid + "_" + i, n: i + 1, name: s[0], kw: s[1], cv: s[2], text: s[3] }));
+const CRIT_CASTS = {
+  sanctioned: ["10+: +1 Damage.", "10+: range 12\".", "10+: the 2 points can be up to 9\" apart.", "10+: range 18\".", "12+: Rend -2.", "13+: does not scatter."],
+  saints: ["10+: heal 3 instead of d3.", "10+: up to 2 friendly fighters.", "10+: aura 12\".", "10+: up to 2 friendly fighters.", "10+: aura 9\".", "12+: affects fighters within 6\" of the point."],
+  tunnels: ["10+: set up within 12\".", "10+: range 18\".", "12+: chains to a third target.", "12+: range 15\".", "10+: aura 9\".", "12+: first placement does not scatter."],
+  poxes: ["10+: Damage d3.", "10+: range 12\".", "10+: aura 9\".", "12+: lasts for the rest of the battle.", "10+: range 6\".", "12+: does not scatter."],
+  necromancy: ["12+: gain 3 tokens.", "12+: range 12\".", "12+: set up within 9\".", "12+: set up within 18\".", "12+: does not scatter.", "13+: +1 Damage."],
+  blood: ["10+: 2 damage, caster heals 2.", "10+: range 12\".", "14+: set up within 9\".", "10+: up to 2 Thralls.", "10+: -1 to the Willpower tests.", "14+: 15\" line."],
+  maggots: ["10+: range 12\".", "12+: mire within 9\".", "12+: range 12\".", "12+: does not scatter.", "10+: range 12\".", "14+: fighters hit test Willpower or are poisoned."],
+  rot: ["14+: set up within 9\".", "12+: 2 targets.", "12+: range 12\".", "10+: -1 to the Willpower tests.", "12+: range 12\".", "14+: range 12\"."]
+};
+for (const [lid, l] of Object.entries(LORES)) l.spells = l.spells.map((s, i) => ({ id: lid + "_" + i, n: i + 1, name: s[0], kw: s[1], cv: s[2], text: s[3], cc: CRIT_CASTS[lid][i] }));
+
+// Spells that deal damage, shown as weapon rows when they are a signature spell.
+// a: "1" single target, "T" template or line. direct: damage with no armour roll.
+const SPELL_ATTACKS = {
+  sanctioned_0: { rng: "15\"", a: "1", r: "-1", d: "d3", traits: ["Closest visible enemy"], cc: "10+: +1 Damage" },
+  sanctioned_4: { rng: "Flame", a: "T", r: "-1", d: "d3+1", traits: ["Flame"], cc: "12+: Rend -2" },
+  sanctioned_5: { rng: "15\"", a: "T", r: "-1", d: "d3+1", traits: ["Blast", "Scatters d6\"", "Vortex stays until end of round"], cc: "13+: no scatter" },
+  tunnels_2: { rng: "12\"", a: "1", r: "-1", d: "d3", traits: ["Closest visible enemy", "Chains to 1 more within 3\""], cc: "12+: a third target" },
+  tunnels_5: { rng: "15\"", a: "T", r: "-1", d: "d3", traits: ["Blast", "Scatters d6\"", "Bounces d6\" and hits again"], cc: "12+: first placement doesn't scatter" },
+  poxes_0: { rng: "Flame", a: "T", r: "-1", d: "1", traits: ["Flame"], cc: "10+: Damage d3" },
+  poxes_5: { rng: "12\"", a: "T", r: "-", d: "d3", traits: ["Blast", "Scatters d6\"", "Poisons fighters hit"], cc: "12+: no scatter" },
+  necromancy_0: { rng: "12\"", a: "1", r: "-", d: "d3", traits: ["Closest visible enemy", "Gain d3 witchfire tokens, spend 1 per activation as a bonus action"], cc: "12+: 3 tokens" },
+  necromancy_4: { rng: "12\"", a: "T", r: "-1", d: "d3+1", traits: ["Blast", "Scatters d6\""], cc: "12+: no scatter" },
+  necromancy_5: { rng: "Flame", a: "T", r: "-2", d: "d3", traits: ["Flame"], cc: "13+: +1 Damage" },
+  blood_0: { rng: "9\"", a: "1", r: "–", d: "1", direct: true, traits: ["Closest visible enemy", "Caster heals 1"], cc: "10+: 2 damage, heal 2" },
+  blood_4: { rng: "Flame", a: "T", r: "–", d: "1", direct: true, traits: ["Flame", "Willpower test or -1 to attack and parry rolls"], cc: "10+: -1 to the Willpower test" },
+  blood_5: { rng: "12\"", a: "T", r: "-2", d: "d3", traits: ["Line 1\" wide", "Caster heals 1 per damage dealt"], cc: "14+: 15\" line" },
+  maggots_2: { rng: "9\"", a: "1", r: "–", d: "d3", direct: true, traits: ["Closest visible enemy", "Willpower test or scatter d6\""], cc: "12+: 12\" range" },
+  maggots_5: { rng: "Flame", a: "T", r: "-1", d: "d3", traits: ["Flame"], cc: "14+: Willpower test or poisoned" },
+  rot_2: { rng: "9\"", a: "1", r: "–", d: "1", direct: true, traits: ["Closest visible enemy", "Move 2\" until a Willpower test is passed"], cc: "12+: 12\" range" }
+};
+function spellWeapons(f) {
+  return f.spells.filter(id => SPELL_ATTACKS[id]).map(id => {
+    const sp = findSpell(id), x = SPELL_ATTACKS[id];
+    return { id: "spell:" + id, spell: true, name: sp.name, k: "s", rng: x.rng, a: x.a, r: x.r, d: x.d, c: "–",
+      traits: [`Spell ${sp.cv}`, ...(x.direct ? ["No armour roll"] : []), ...x.traits, `Critical cast ${x.cc}`] };
+  });
+}
+const weaponName = (f, w) => (w.id === "unarmed" || w.spell) ? w.name : gearLabel(f, w.id);
 
 /* ---------- shared rule texts ---------- */
 const RULE = {
@@ -576,10 +633,10 @@ const FACTIONS = {
   guild: {
     name: "Guild Mercenaries", short: "Guild", blurb: "Sell-swords, nobles, witch hunters and wizards of the Guild.",
     lists: {
-      main: { name: "Main List", items: [["axe",16],["club",14],["dagger",10],["flail",14],["halberd",34],["heavy_axe",40],["spear",16],["sword",18],["warhammer",38],["zweihander",42],["bp_pistol",18],["bp_rifle",22],["blunderbuss",15],["crossbow",26],["hand_crossbow",16],["long_bow",28],["short_bow",18],["cuirass",20],["grappling_hook",5],["shield",10]] },
-      champion: { name: "Champion List", items: [["brace_pistols",32],["long_rifle",90],["repeater",35],["full_plate",40],["guild_banner",25],["loyal_companion",20]] },
-      munitions: { name: "Munitions List", items: [["arbalest",96],["flamethrower",88],["fire_bombs",37],["volley_rifle",75],["bomb_bolt",25]] },
-      ogre: { name: "Ogre List", items: [["ogre_blade",36],["ogre_gw",50],["ogre_mace",38],["arbalest",96],["ogre_cannon",105],["ogre_pistol",30],["ogre_armour",30],["shield",10]] },
+      main: { name: "Main List", items: [["axe",16],["club",14],["dagger",10],["flail",14],["halberd",34],["heavy_axe",40],["spear",16],["sword",18],["warhammer",38],["zweihander",42],["bp_pistol",18],["bp_rifle",24],["blunderbuss",14],["crossbow",20],["hand_crossbow",16],["long_bow",26],["short_bow",16],["cuirass",20],["grappling_hook",5],["shield",10]] },
+      champion: { name: "Champion List", items: [["brace_pistols",30],["long_rifle",70],["repeater",30],["full_plate",40],["guild_banner",25],["loyal_companion",20]] },
+      munitions: { name: "Munitions List", items: [["arbalest",90],["flamethrower",80],["fire_bombs",34],["volley_rifle",75],["bomb_bolt",25]] },
+      ogre: { name: "Ogre List", items: [["ogre_blade",36],["ogre_gw",50],["ogre_mace",38],["ogre_arbalest",90],["ogre_cannon",112],["ogre_pistol",30],["ogre_armour",30],["shield",10]] },
       cleric: { name: "Cleric List", items: [["arcane_staff",10],["club",14],["warhammer",38],["cuirass",20],["full_plate",40],["warded_robes",10],["grimoire",15],["shield",10],["stakes",5]] },
       witch: { name: "Witch Hunters List", items: [["lantern",4],["stakes",5]] },
       wizard: { name: "Wizard List", items: [["arcane_staff",10],["ensorcelled",26],["sword",18],["warded_robes",10],["grimoire",15]] }
@@ -596,7 +653,7 @@ const FACTIONS = {
       F("wh_apprentice", "Witch Hunter's Apprentice", "Champion", 80, "Human, Mercenary, Witch Hunter", "5\" 4+ 4+ 6+ 3 4 5", ["main","champion","witch"], 40, 1, { rules: [RULE.litanies] }),
       F("guild_mercenary", "Guild Mercenary", "Henchman", 50, "Mercenary, Human", "5\" 4+ 4+ 6+ 3 3 4", ["main","munitions"], 20, 1),
       F("guild_recruit", "Guild Recruit", "Henchman", 30, "Mercenary, Human", "5\" 5+ 5+ 6+ 2 2 3", ["main"], 0, 1),
-      F("merc_ogre", "Mercenary Ogre", "Brute", 100, "Mercenary, Ogre", "4\" 4+ 4+ 6+ 2 2 8", ["ogre"], 20, 1, { rules: [RULE.strength] }),
+      F("merc_ogre", "Mercenary Ogre", "Brute", 100, "Mercenary, Ogre", "4\" 4+ 4+ 6+ 2 2 8", ["ogre"], 20, 1),
       F("hunting_dog", "Hunting Dog", "Beast", 30, "Mercenary, Dog", "7\" 3+ - 6+ 4 1 3", [], 0, 0, { fixed: ["vicious_bite"], locked: true, rules: [RULE.sniff, ["Trackers", "If your search party includes a Hunting Dog, you can re-roll the exploration roll."]] })
     ],
     origins: [
@@ -630,11 +687,11 @@ const FACTIONS = {
     name: "Verminkin", short: "Verminkin", blurb: "Rat-men of the under-tunnels: assassins, plague priests and mad engineers.",
     rareOverride: { grimoire: 1 },
     lists: {
-      main: { name: "Main List", items: [["axe",16],["club",14],["dagger",10,"Dagger/Punch Dagger"],["flail",14],["halberd",34],["heavy_flail",38],["iron_claw",12],["spear",16],["sword",18],["orb_bombs",32],["sling",15],["throwing_stars",12],["gas_mask",10],["grappling_hook",5],["net",30],["shield",10],["smoke_bomb",20]] },
-      champion: { name: "Champion List", items: [["ens_halberd",52],["poison_blade",20],["bp_pistol",18],["repeater",35],["full_plate",40],["bomb_rat",25],["clan_banner",25]] },
-      sparkseer: { name: "Sparkseer List", items: [["spark_drill",62],["arc_gun",100],["rocket",105],["flame_canister",50],["long_rifle",90],["periscope",20]] },
-      ratmutant: { name: "Rat-Mutant List", items: [["rat_blade",36],["spark_drill",62],["spark_fists",60],["gatling",110],["orb_launcher",120],["flame_canister",50],["heavy_plating",30]] },
-      contraption: { name: "Contraption List", items: [["dagger",10,"Dagger/Punch Dagger"],["arc_gun",100],["flame_canister",50],["wheel_spikes",50]] },
+      main: { name: "Main List", items: [["axe",16],["club",14],["dagger",10,"Dagger/Punch Dagger"],["flail",14],["halberd",34],["heavy_flail",38],["iron_claw",12],["spear",16],["sword",18],["orb_bombs",32],["sling",12],["throwing_stars",10],["gas_mask",10],["grappling_hook",5],["net",30],["shield",10],["smoke_bomb",20]] },
+      champion: { name: "Champion List", items: [["ens_halberd",52],["poison_blade",20],["bp_pistol",18],["repeater",30],["full_plate",40],["bomb_rat",25],["clan_banner",25]] },
+      sparkseer: { name: "Sparkseer List", items: [["spark_drill",62],["arc_gun",90],["rocket",75],["flame_canister",50],["long_rifle",70],["periscope",20]] },
+      ratmutant: { name: "Rat-Mutant List", items: [["rat_blade",36],["spark_drill",62],["spark_fists",60],["gatling",110],["orb_launcher",100],["flame_canister",50],["heavy_plating",30]] },
+      contraption: { name: "Contraption List", items: [["dagger",10,"Dagger/Punch Dagger"],["arc_gun",90],["flame_canister",50],["wheel_spikes",50]] },
       practitioner: { name: "Practitioner List", items: [["arcane_staff",10],["ensorcelled",26],["warded_robes",10],["grimoire",15],["ens_bell",10]] }
     },
     fighters: [
@@ -648,7 +705,7 @@ const FACTIONS = {
       F("vermin_champion", "Verminkin Champion", "Champion", 95, "Verminkin", "6\" 3+ 4+ 6+ 4 3 5", ["main","champion"], 40, 1, { picks: 1, rules: [["Seasoned Warrior", "When recruited, pick 1 skill."]] }),
       F("spark_app", "Sparkseer's Apprentice", "Champion", 85, "Verminkin", "6\" 4+ 4+ 6+ 4 3 4", ["main","champion","sparkseer"], 40, 1, { max: 2, rules: [RULE.engineer] }),
       F("vermin_warrior", "Verminkin Warrior", "Henchman", 40, "Verminkin", "6\" 5+ 5+ 6+ 4 2 4", ["main"], 0, 1),
-      F("rat_mutant", "Rat-Mutant", "Brute", 105, "Verminkin, Ogre", "5\" 4+ 4+ 6+ 2 2 8", ["ratmutant"], 20, 1, { fixed: ["oversized_claw"], rules: [RULE.strength] }),
+      F("rat_mutant", "Rat-Mutant", "Brute", 105, "Verminkin, Ogre", "5\" 4+ 4+ 6+ 2 2 8", ["ratmutant"], 20, 1, { fixed: ["oversized_claw"] }),
       F("contraption", "Rolling-Contraption", "Brute", 150, "Verminkin, Contraption", "2d6\" 4+ 4+ 4+ 1 3 8", ["contraption"], 20, 1, { max: 1, fixed: ["crushing_bulk"], rules: [["Unpredictable Movement", "Move is 2d6\", rolled each time it moves."], ["Splat!", "After a Charge move, 1 engaged enemy is hit 3 times at Rend -1, Damage 1."], ["Large and Heavy", "Cannot climb or jump; must be set up on and finish moves on the battlefield floor."]] }),
       F("giant_rat", "Giant Rat", "Beast", 20, "Verminkin, Rat", "8\" 5+ - 6+ 4 1 2", [], 0, 0, { fixed: ["nasty_bite"], locked: true })
     ],
@@ -684,8 +741,8 @@ const FACTIONS = {
     lists: {
       main: { name: "Main List", items: [["axe",16],["club",14],["dagger",10],["flail",14],["halberd",34],["spear",16],["sword",18],["cuirass",20],["shield",10]] },
       champion: { name: "Champion List", items: [["cursed_blade",40],["great_mace",38],["heavy_axe",40],["full_plate",40],["ancient_banner",25],["bestial_companion",30],["spirit_guardian",45],["winged_familiar",12]] },
-      practitioner: { name: "Practitioner List", items: [["arcane_staff",10],["ensorcelled",26],["sword",18],["cursed_blade",40,"Cursed Sword"],["warded_robes",10],["grimoire",15],["bestial_companion",30],["winged_familiar",12],["spirit_guardian",45]] },
-      zombieogre: { name: "Zombie Ogre List", items: [["ogre_blade",36],["ogre_gw",50],["ogre_mace",38],["shield",10]] }
+      practitioner: { name: "Practitioner List", items: [["arcane_staff",10],["ensorcelled",26],["sword",18],["cursed_blade",40],["warded_robes",10],["grimoire",15],["bestial_companion",30],["winged_familiar",12],["spirit_guardian",45]] },
+      zombieogre: { name: "Zombie Ogre List", items: [["ogre_blade",36],["ogre_gw_coven",50],["ogre_mace",38],["shield",10]] }
     },
     fighters: [
       F("bc_noble", "Bloodcursed Noble", "Leader", 185, "Undead, Wizard, Vampyre, Aristocrat", "5\" 3+ 5+ 6+ 5 4 6", ["main","champion"], 60, 1, { picks: 1, lores: ["blood"], sigs: 1, rules: [["Noble Blood", "When recruited, pick 1 skill."], ["Spellcraft", "Knows the Lore of Blood. 1 signature spell; prepares 1 random spell each battle."]] }),
@@ -699,7 +756,7 @@ const FACTIONS = {
       F("barrow_champion", "Barrow Champion", "Champion", 85, "Undead, Skeleton", "4\" 3+ 6+ 6+ 3 4 5", ["main","champion"], 40, 1, { picks: 1, rules: [["Veteran in Life", "When recruited, pick 1 skill."], RULE.unshakeable] }),
       F("skeleton", "Skeleton Warrior", "Henchman", 40, "Undead, Skeleton, Thrall", "4\" 4+ 6+ 6+ 3 2 4", ["main"], 0, 0, { rules: [RULE.unshakeable] }),
       F("zombie", "Zombie", "Henchman", 35, "Undead, Zombie, Thrall", "4\" 5+ 6+ 6+ 1 2 4", [], 0, 0, { fixed: ["zombie_bite"], locked: true, rules: [RULE.unshakeable] }),
-      F("zombie_ogre", "Zombie Ogre", "Brute", 95, "Undead, Zombie, Thrall", "4\" 4+ 6+ 6+ 1 2 8", ["zombieogre"], 0, 0, { rules: [RULE.strength, RULE.unshakeable] }),
+      F("zombie_ogre", "Zombie Ogre", "Brute", 95, "Undead, Zombie, Thrall", "4\" 4+ 6+ 6+ 1 2 8", ["zombieogre"], 0, 0, { rules: [RULE.unshakeable] }),
       F("gargoyle", "Gargoyle", "Brute", 150, "Undead, Gargoyle, Thrall, Fly", "6\" 3+ 6+ 6+ 3 3 8", [], 0, 0, { fixed: ["stone_talons"], locked: true, rules: [RULE.unshakeable] }),
       F("dire_wolf", "Dire Wolf", "Beast", 50, "Undead, Dog", "7\" 3+ - 6+ 4 1 5", [], 0, 0, { fixed: ["necrotic_bite"], locked: true, rules: [RULE.sniff, ["Trackers", "If your search party includes a Dire Wolf, you can re-roll the exploration roll."]] }),
       F("dire_bat", "Dire Bat", "Beast", 60, "Undead, Bat, Fly", "10\" 5+ - 6+ 3 1 3", [], 0, 0, { fixed: ["biting_fangs"], locked: true, rules: [["Vampyric Bite", "Each time an enemy suffers damage from its melee attack, it heals 1 life."]] })
@@ -752,9 +809,9 @@ const FACTIONS = {
       F("beastman", "Darkcloven Beastman", "Henchman", 55, "Cloister, Beastman", "5\" 4+ 5+ 6+ 3 3 4", ["main"], 20, 1, { rules: [RULE.ramhorns] }),
       F("rot_demon", "Rot Demon", "Henchman", 120, "Cloister, Demon", "4\" 3+ 6+ 5+ 4 4 5", [], 30, 1, { max: 3, fixed: ["drb"], locked: true, rules: [RULE.wards, RULE.fear] }),
       F("rotspawn", "Demonic Rotspawn", "Brute", 130, "Cloister, Demon", "5\" 3+ 6+ 5+ 4 4 8", [], 30, 1, { fixed: ["rot_maw"], locked: true, rules: [RULE.wards, RULE.fear] }),
-      F("colossal", "Demonic Rot-Colossal", "Brute", 200, "Cloister, Demon", "5\" 4+ 6+ 5+ 4 4 10", [], 30, 1, { fixed: ["great_drb"], locked: true, rules: [RULE.wards, RULE.fear, RULE.strength] }),
+      F("colossal", "Demonic Rot-Colossal", "Brute", 200, "Cloister, Demon", "5\" 4+ 6+ 5+ 4 4 10", [], 30, 1, { fixed: ["great_drb"], locked: true, rules: [RULE.wards, RULE.fear] }),
       F("bloat_fly", "Bloat Fly", "Beast", 50, "Cloister, Fly", "10\" 5+ - 6+ 4 1 2", [], 0, 0, { fixed: ["proboscis"], locked: true }),
-      F("rotling", "Rotling", "Beast", 30, "Cloister, Demon", "4\" 4+ - 5+ 3 2 3", [], 0, 0, { fixed: ["rot_strike"], locked: true })
+      F("rotling", "Rotling", "Beast", 25, "Cloister, Demon", "4\" 4+ - 5+ 3 2 3", [], 0, 0, { fixed: ["rot_strike"], locked: true })
     ],
     origins: [
       { id: "militant", name: "Knights-Militant", leader: "knight_abbot", sh: "Fortified Keep", limits: { cl_knight: Infinity }, perk: "Any number of Cloister Knights.", shText: "Income 3d6x5 silver. Martial Training: in step 3, up to 3 Knights earn d6 bonus experience. Search the City: if you won, gain 1 extra re-roll when searching." },
@@ -970,6 +1027,7 @@ function profile(f) {
     return { ...g, a, note };
   });
   if (!weapons.some(w => w.k === "m")) weapons.unshift({ ...G.unarmed, note: "No melee weapon" });
+  weapons = [...weapons, ...spellWeapons(f)];
   return { st, mod, kw, weapons };
 }
 
@@ -1063,10 +1121,10 @@ function fighterCard(f) {
   const weaponRows = p.weapons.map(w => {
     const idx = f.gear.indexOf(w.id); const isFixed = idx === -1;
     return `<tr>
-      <td>${esc(w.id === "unarmed" ? w.name : gearLabel(f, w.id))}${w.note ? `<div class="incl">${esc(w.note)}</div>` : ""}</td>
-      <td class="c num">${w.k === "r" ? esc(w.rng) : "—"}</td><td class="c num">${esc(w.a)}</td><td class="c num">${esc(w.r)}</td><td class="c num">${esc(w.d)}</td><td class="c num">${esc(w.c)}</td>
+      <td>${esc(weaponName(f, w))}${w.note ? `<div class="incl">${esc(w.note)}</div>` : ""}</td>
+      <td class="c num">${w.k !== "m" ? esc(w.rng) : "—"}</td><td class="c num">${esc(w.a)}</td><td class="c num">${esc(w.r)}</td><td class="c num">${esc(w.d)}</td><td class="c num">${esc(w.c)}</td>
       <td>${traitHtml(w.traits)}</td>
-      <td class="num">${w.id === "unarmed" ? "" : isFixed ? `<span class="incl">included</span>` : gearCost(f, w.id) + "s"}</td>
+      <td class="num">${w.spell ? `<span class="incl">signature spell</span>` : w.id === "unarmed" ? "" : isFixed ? `<span class="incl">included</span>` : gearCost(f, w.id) + "s"}</td>
       <td>${isFixed ? "" : `<button class="rm" data-act="rm-gear" data-uid="${f.uid}" data-id="${w.id}" aria-label="Remove ${esc(w.name)}" title="Remove">×</button>`}</td>
     </tr>`;
   }).join("");
@@ -1209,8 +1267,8 @@ function rosterCard(f) {
   const wRows = Array.from({ length: rows }, (_, i) => {
     const w = weapons[i];
     if (!w) return `<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>`;
-    const nm = w.id === "unarmed" ? w.name : gearLabel(f, w.id);
-    return `<tr><td class="l">${esc(nm)}</td><td>${w.k === "r" ? esc(w.rng) : "–"}</td><td>${esc(w.a)}</td><td>${esc(w.r)}</td><td>${esc(w.d)}</td><td>${esc(w.c)}</td><td class="tr">${esc(w.traits.join(", ") || "–")}${w.note ? " (" + esc(w.note) + ")" : ""}</td></tr>`;
+    const nm = weaponName(f, w);
+    return `<tr><td class="l">${esc(nm)}</td><td>${w.k !== "m" ? esc(w.rng) : "–"}</td><td>${esc(w.a)}</td><td>${esc(w.r)}</td><td>${esc(w.d)}</td><td>${esc(w.c)}</td><td class="tr">${esc(w.traits.join(", ") || "–")}${w.note ? " (" + esc(w.note) + ")" : ""}</td></tr>`;
   }).join("");
   let wg = "";
   if (f) {
@@ -1249,6 +1307,32 @@ function rosterCard(f) {
   </div>`;
 }
 
+// reference page: every spell a warband caster can prepare at the start of a battle
+function lorePageHtml() {
+  const casters = sortedFighters().filter(f => ftype(f.t).lores.length);
+  if (!casters.length) return "";
+  const loreIds = [...new Set(casters.flatMap(f => ftype(f.t).lores))];
+  const blocks = loreIds.map(lid => {
+    const lore = LORES[lid];
+    const who = casters.filter(f => ftype(f.t).lores.includes(lid));
+    const sigOwners = sp => who.filter(f => f.spells.includes(sp.id)).map(f => f.name || ftype(f.t).name);
+    return `<div class="lore">
+      <h3>${esc(lore.name)} <span class="d6">(d6)</span></h3>
+      <div class="known"><b>Known by:</b> ${esc(who.map(f => `${f.name || ftype(f.t).name} (${ftype(f.t).name})`).join(", "))}</div>
+      <table class="lt"><colgroup><col style="width:7mm"><col style="width:30mm"><col style="width:15mm"><col style="width:12mm"><col><col style="width:38mm"><col style="width:22mm"></colgroup>
+        <thead><tr><th>d6</th><th>Spell</th><th>Type</th><th>Casting</th><th>Effect</th><th>Critical Cast</th><th>Signature of</th></tr></thead>
+        <tbody>${lore.spells.map(sp => { const own = sigOwners(sp); return `<tr class="${own.length ? "sig" : ""}">
+          <td class="n">${sp.n}</td><td><b>${esc(sp.name)}</b></td><td>${esc(sp.kw)}</td><td class="c">${esc(sp.cv)}</td>
+          <td>${esc(sp.text)}</td><td>${esc(sp.cc)}</td><td>${esc(own.join(", "))}</td></tr>`; }).join("")}</tbody></table>
+    </div>`;
+  }).join("");
+  return `<div class="paper lore-page">
+    <h2 class="bl">Spell Lores</h2>
+    <p class="lore-note">Before each battle, every Wizard and Priest rolls a d6 on each lore they know and prepares that spell. Signature spells are always prepared. If the roll lands on a signature spell, or on a spell already prepared, it has no effect and is not re-rolled.</p>
+    ${blocks}
+  </div>`;
+}
+
 function sheetPagesHtml() {
   const o = origin(), spent = totalSpent(), exp = totalExp();
   const orn = `<span class="orn"></span>`;
@@ -1274,7 +1358,7 @@ function sheetPagesHtml() {
   if (S.blanks !== false) { const pad = (5 - (cards.length % 5)) % 5; for (let i = 0; i < pad; i++) cards.push(rosterCard(null)); }
   const pages = [];
   for (let i = 0; i < cards.length; i += 5) pages.push(`<div class="paper">${cards.slice(i, i + 5).join("")}</div>`);
-  return cover + pages.join("");
+  return cover + pages.join("") + lorePageHtml();
 }
 
 function exportPdf() {
@@ -1328,7 +1412,12 @@ function rosterText() {
     const ft = ftype(f.t); const p = profile(f);
     lines.push(`${f.name} — ${ft.name} [${ft.role}] ${fighterCost(f)}s, Exp ${f.exp}`);
     lines.push(`  Mv ${p.st.mv} Bl ${p.st.bl} Bw ${p.st.bw} Ar ${p.st.ar} In ${p.st.in} Wl ${p.st.wl} Lf ${p.st.lf}`);
-    for (const w of p.weapons) lines.push(`  ${w.id === "unarmed" ? w.name : gearLabel(f, w.id)}: ${w.k === "r" ? w.rng + " " : ""}A${w.a} R${w.r} D${w.d} C${w.c}${w.traits.length ? " (" + w.traits.join(", ") + ")" : ""}`);
+    for (const w of p.weapons) {
+      if (w.spell) {
+        const cv = w.traits[0].replace("Spell ", "");
+        lines.push(`  Spell: ${w.name} (casts on ${cv}): ${w.rng}${w.a === "T" ? " template" : ", 1 target"}, Rend ${w.r}, Damage ${w.d} (${w.traits.slice(1).join(", ")})`);
+      } else lines.push(`  ${weaponName(f, w)}: ${w.k === "r" ? w.rng + " " : ""}A${w.a} R${w.r} D${w.d} C${w.c}${w.traits.length ? " (" + w.traits.join(", ") + ")" : ""}`);
+    }
     if (ft.alt) {
       const a = parseStats(ft.alt.st), w = G[ft.alt.weapon];
       lines.push(`  Transforms into ${ft.alt.name} (${ft.alt.kw}):`);
